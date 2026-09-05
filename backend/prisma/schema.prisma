@@ -1,0 +1,329 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleUtilisateur {
+  SUPER_ADMIN
+  ADMIN
+  GESTIONNAIRE
+  MAGASINIER
+  CAISSIER
+  COMPTABLE
+  COMMERCIAL
+  LECTURE_SEULE
+}
+
+enum StatutUtilisateur {
+  ACTIF
+  INACTIF
+  SUSPENDU
+  SUPPRIME
+}
+
+enum StatutMoto {
+  EN_STOCK
+  RESERVEE
+  VENDUE
+  EN_REPARATION
+}
+
+enum TypeVente {
+  COMPTANT
+  CREDIT
+}
+
+enum StatutVente {
+  EN_COURS
+  SOLDEE
+  ANNULEE
+}
+
+enum StatutBus {
+  DISPONIBLE
+  EN_VOYAGE
+  MAINTENANCE
+  PANNE
+}
+
+enum StatutLocation {
+  RESERVEE
+  EN_COURS
+  TERMINEE
+  ANNULEE
+}
+
+enum DocumentType {
+  FACTURE
+  BON_LIVRAISON
+  BON_COMMANDE
+  CONTRAT_VENTE
+  CONTRAT_LOCATION
+  DEVIS
+  RECU
+}
+
+enum MouvementType {
+  ENTREE
+  SORTIE
+  AJUSTEMENT
+}
+
+model Utilisateur {
+  id                  Int                 @id @default(autoincrement())
+  nom                 String
+  prenom              String
+  username            String?             @unique
+  telephone           String              @unique
+  email               String              @unique
+  motDePasse          String
+  role                RoleUtilisateur
+  actif               Boolean             @default(true)
+  statut              StatutUtilisateur   @default(ACTIF)
+  dernierLogin        DateTime?
+  deletedAt           DateTime?
+  refreshToken        String?
+  passwordResetToken  String?
+  passwordResetExpires DateTime?
+  createdAt           DateTime            @default(now())
+
+  ventes              Vente[]
+  paiements           Paiement[]
+  journaux            CaisseJournal[]
+  documents           Document[]
+}
+
+model Client {
+  id             Int          @id @default(autoincrement())
+  nom            String
+  prenom         String
+  telephone      String       @unique
+  adresse        String?
+  profession     String?
+  photo          String?
+  pieceIdentite  String?
+  email          String?
+  solde          Float        @default(0)
+  createdAt      DateTime     @default(now())
+
+  ventes         Vente[]
+  paiements      Paiement[]
+  locations      Location[]
+  documents      Document[]
+}
+
+model Fournisseur {
+  id           Int         @id @default(autoincrement())
+  nom          String
+  telephone    String      @unique
+  email        String?
+  adresse      String?
+  contact      String?
+  createdAt    DateTime    @default(now())
+
+  achats       Achat[]
+  motos        Moto[]
+  pieces       Piece[]
+  accessoires  Accessoire[]
+}
+
+model Marque {
+  id      Int     @id @default(autoincrement())
+  nom     String  @unique
+
+  motos   Moto[]
+  bus     Bus[]
+}
+
+model Moto {
+  id               Int          @id @default(autoincrement())
+  reference        String?      @unique
+  sku              String       @unique
+  codeBarres       String       @unique
+  marqueId         Int
+  marque           Marque       @relation(fields: [marqueId], references: [id])
+  type             String
+  modele           String
+  couleur          String
+  annee            Int?
+  numeroChassis    String       @unique
+  numeroMoteur     String       @unique
+  immatriculation  String?      @unique
+  fournisseurId    Int?
+  fournisseur      Fournisseur? @relation(fields: [fournisseurId], references: [id])
+  dateAchat        DateTime
+  prixAchat        Float
+  prixVente        Float
+  garantie         String?
+  photo            String?
+  statut           StatutMoto   @default(EN_STOCK)
+  observations     String?
+  disponible       Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+
+  ventes           Vente[]
+  mouvements       StockMouvement[]
+  documents        Document[]
+}
+
+model Piece {
+  id            Int             @id @default(autoincrement())
+  reference     String          @unique
+  description   String
+  categorie     String
+  sousCategorie String?
+  prixAchat     Float
+  prixVente     Float
+  quantite      Int             @default(0)
+  seuilAlerte   Int             @default(5)
+  fournisseurId Int?
+  fournisseur   Fournisseur?    @relation(fields: [fournisseurId], references: [id])
+  createdAt     DateTime        @default(now())
+
+  mouvements    StockMouvement[]
+}
+
+model Accessoire {
+  id            Int             @id @default(autoincrement())
+  reference     String          @unique
+  nom           String
+  description   String?
+  categorie     String
+  sousCategorie String?
+  prixAchat     Float
+  prixVente     Float
+  quantite      Int             @default(0)
+  seuilAlerte   Int             @default(5)
+  fournisseurId Int?
+  fournisseur   Fournisseur?    @relation(fields: [fournisseurId], references: [id])
+  createdAt     DateTime        @default(now())
+
+  mouvements    StockMouvement[]
+}
+
+model Bus {
+  id              Int          @id @default(autoincrement())
+  numero          String       @unique
+  immatriculation String       @unique
+  marqueId        Int
+  marque          Marque       @relation(fields: [marqueId], references: [id])
+  nombrePlaces    Int
+  photo           String?
+  statut          StatutBus    @default(DISPONIBLE)
+  description     String?
+  createdAt       DateTime     @default(now())
+
+  locations       Location[]
+  documents       Document[]
+}
+
+model Location {
+  id           Int            @id @default(autoincrement())
+  busId        Int
+  bus          Bus            @relation(fields: [busId], references: [id])
+  clientId     Int
+  client       Client         @relation(fields: [clientId], references: [id])
+  dateDebut    DateTime
+  dateFin      DateTime
+  statut       StatutLocation @default(RESERVEE)
+  montant      Float
+  acompte      Float          @default(0)
+  solde        Float
+  penalite     Float          @default(0)
+  createdAt    DateTime       @default(now())
+
+  documents    Document[]
+}
+
+model Vente {
+  id            Int          @id @default(autoincrement())
+  clientId      Int
+  client        Client       @relation(fields: [clientId], references: [id])
+  utilisateurId Int
+  utilisateur   Utilisateur  @relation(fields: [utilisateurId], references: [id])
+  motoId        Int
+  moto          Moto         @relation(fields: [motoId], references: [id])
+  type          TypeVente
+  montant       Float
+  acompte       Float?
+  reste         Float?
+  statut        StatutVente  @default(EN_COURS)
+  dateVente     DateTime     @default(now())
+  createdAt     DateTime     @default(now())
+
+  paiements     Paiement[]
+  documents     Document[]
+}
+
+model Paiement {
+  id             Int          @id @default(autoincrement())
+  venteId        Int?
+  vente          Vente?       @relation(fields: [venteId], references: [id])
+  clientId       Int?
+  client         Client?      @relation(fields: [clientId], references: [id])
+  utilisateurId  Int
+  utilisateur    Utilisateur  @relation(fields: [utilisateurId], references: [id])
+  type           String
+  montant        Float
+  datePaiement   DateTime      @default(now())
+  mode           String
+  commentaire    String?
+}
+
+model StockMouvement {
+  id            Int          @id @default(autoincrement())
+  motoId        Int?
+  moto          Moto?        @relation(fields: [motoId], references: [id])
+  pieceId       Int?
+  piece         Piece?       @relation(fields: [pieceId], references: [id])
+  accessoireId  Int?
+  accessoire    Accessoire?  @relation(fields: [accessoireId], references: [id])
+  quantite      Int
+  type          MouvementType
+  reference     String?
+  createdAt     DateTime     @default(now())
+}
+
+model Achat {
+  id            Int          @id @default(autoincrement())
+  fournisseurId Int
+  fournisseur   Fournisseur  @relation(fields: [fournisseurId], references: [id])
+  montant       Float
+  dateAchat     DateTime     @default(now())
+  details       String?
+}
+
+model CaisseJournal {
+  id            Int          @id @default(autoincrement())
+  utilisateurId Int
+  utilisateur   Utilisateur  @relation(fields: [utilisateurId], references: [id])
+  type          String
+  montant       Float
+  categorie     String
+  dateOperation DateTime     @default(now())
+  commentaire   String?
+}
+
+model Document {
+  id            Int           @id @default(autoincrement())
+  type          DocumentType
+  chemin        String
+  description   String?
+  createdAt     DateTime      @default(now())
+  clientId      Int?
+  client        Client?       @relation(fields: [clientId], references: [id])
+  venteId       Int?
+  vente         Vente?        @relation(fields: [venteId], references: [id])
+  busId         Int?
+  bus           Bus?          @relation(fields: [busId], references: [id])
+  locationId    Int?
+  location      Location?     @relation(fields: [locationId], references: [id])
+  motoId        Int?
+  moto          Moto?         @relation(fields: [motoId], references: [id])
+  utilisateurId Int?
+  utilisateur   Utilisateur?  @relation(fields: [utilisateurId], references: [id])
+}

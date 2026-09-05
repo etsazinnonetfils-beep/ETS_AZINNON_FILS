@@ -1,0 +1,11 @@
+.sidebar{
+
+width:250px;
+
+background:white;
+
+height:100vh;
+
+box-shadow:var(--shadow);
+
+}
