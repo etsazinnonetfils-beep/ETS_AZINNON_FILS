@@ -4,7 +4,11 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function main() {
-  const password = await bcrypt.hash("Admin@2026", 10);
+  const adminInitialPassword = process.env.ADMIN_INITIAL_PASSWORD;
+  if (!adminInitialPassword) {
+    throw new Error('ADMIN_INITIAL_PASSWORD must be set for seeding.');
+  }
+  const password = await bcrypt.hash(adminInitialPassword, 10);
 
   await prisma.utilisateur.upsert({
     where: { email: "admin@etsazinnon.com" },
