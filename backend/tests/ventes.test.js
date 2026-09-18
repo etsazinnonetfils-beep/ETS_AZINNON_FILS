@@ -43,6 +43,7 @@ describe("Ventes API", () => {
 
     const response = await request(app)
       .post("/api/ventes")
+      .set("Authorization", `Bearer ${require("jsonwebtoken").sign({ userId: 2, role: "ADMIN" }, process.env.JWT_SECRET || "secret")}`)
       .send({
         utilisateurId: 2,
         motoId: 5,
@@ -71,6 +72,7 @@ describe("Ventes API", () => {
 
     const response = await request(app)
       .post("/api/ventes")
+      .set("Authorization", `Bearer ${require("jsonwebtoken").sign({ userId: 2, role: "ADMIN" }, process.env.JWT_SECRET || "secret")}`)
       .send({
         utilisateurId: 2,
         motoId: 5,
