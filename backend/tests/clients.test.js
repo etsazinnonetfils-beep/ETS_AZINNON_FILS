@@ -44,7 +44,8 @@ describe("Clients API", () => {
     };
     prisma.client.create.mockResolvedValue({ id: 1, ...payload });
 
-    const response = await request(app).post("/api/clients").send(payload);
+    const token = require("jsonwebtoken").sign({ userId: 1, role: "ADMIN" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).post("/api/clients").set("Authorization", `Bearer ${token}`).send(payload);
 
     expect(response.status).toBe(201);
     expect(response.body).toEqual({ id: 1, ...payload });
@@ -52,9 +53,46 @@ describe("Clients API", () => {
   });
 
   it("should reject invalid client data", async () => {
-    const response = await request(app).post("/api/clients").send({ nom: "" });
+    const token = require("jsonwebtoken").sign({ userId: 1, role: "ADMIN" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).post("/api/clients").set("Authorization", `Bearer ${token}`).send({ nom: "" });
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty("message");
+  });
+
+  it("should strip solde when role is not allowed to set it on create", async () => {
+    const payload = {
+      nom: "Test",
+      prenom: "Client",
+      telephone: "0123456789",
+      email: "test2@example.com",
+      solde: 500,
+    };
+    prisma.client.create.mockResolvedValue({ id: 2, nom: payload.nom, prenom: payload.prenom, telephone: payload.telephone, email: payload.email });
+
+    const token = require("jsonwebtoken").sign({ userId: 2, role: "GESTIONNAIRE" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).post("/api/clients").set("Authorization", `Bearer ${token}`).send(payload);
+
+    expect(response.status).toBe(201);
+    // Ensure prisma.client.create was called with data that does NOT include solde
+    const calledArg = prisma.client.create.mock.calls[0][0];
+    expect(calledArg).toBeDefined();
+    expect(calledArg.data).toBeDefined();
+    expect(calledArg.data.solde).toBeUndefined();
+  });
+
+  it("should strip solde when role is not allowed to set it on update", async () => {
+    prisma.client.update.mockResolvedValue({ id: 3, nom: "Up", prenom: "Client", telephone: "0123456789", email: "up@example.com" });
+    const token = require("jsonwebtoken").sign({ userId: 3, role: "GESTIONNAIRE" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app)
+      .put("/api/clients/3")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ nom: "Up", prenom: "Client", telephone: "0123456789", email: "up@example.com", solde: 1000 });
+
+    expect(response.status).toBe(200);
+    const calledArg = prisma.client.update.mock.calls[0][0];
+    expect(calledArg).toBeDefined();
+    expect(calledArg.data).toBeDefined();
+    expect(calledArg.data.solde).toBeUndefined();
   });
 });

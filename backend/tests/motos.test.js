@@ -70,6 +70,7 @@ describe("Motos API", () => {
 
     const response = await request(app)
       .post("/api/motos")
+      .set("Authorization", `Bearer ${require("jsonwebtoken").sign({ userId: 1, role: "MAGASINIER" }, process.env.JWT_SECRET || "secret")}`)
       .send({
         sku: "SKU123",
         codeBarres: "CODE123",
@@ -97,6 +98,7 @@ describe("Motos API", () => {
 
     const response = await request(app)
       .put("/api/motos/1")
+      .set("Authorization", `Bearer ${require("jsonwebtoken").sign({ userId: 1, role: "MAGASINIER" }, process.env.JWT_SECRET || "secret")}`)
       .send({ couleur: "Noir" });
 
     expect(response.status).toBe(200);
@@ -106,7 +108,9 @@ describe("Motos API", () => {
   it("should delete a moto", async () => {
     prisma.moto.delete.mockResolvedValue({});
 
-    const response = await request(app).delete("/api/motos/1");
+    const response = await request(app)
+      .delete("/api/motos/1")
+      .set("Authorization", `Bearer ${require("jsonwebtoken").sign({ userId: 1, role: "MAGASINIER" }, process.env.JWT_SECRET || "secret")}`);
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("Moto supprimée avec succès");
