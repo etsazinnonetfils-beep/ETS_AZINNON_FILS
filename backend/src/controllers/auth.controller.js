@@ -7,7 +7,7 @@ exports.login = async (req, res) => {
     return res.status(200).json({ accessToken, refreshToken, utilisateur });
   } catch (error) {
     console.error(error);
-    return res.status(error.status || 500).json({ message: error.message || "Erreur interne du serveur" });
+    return res.status(error.status || 500).json({ message: "Erreur interne du serveur" });
   }
 };
 
@@ -17,7 +17,7 @@ exports.logout = async (req, res) => {
     return res.status(200).json({ message: "Déconnexion réussie" });
   } catch (error) {
     console.error(error);
-    return res.status(error.status || 500).json({ message: error.message || "Erreur interne du serveur" });
+    return res.status(error.status || 500).json({ message: "Erreur interne du serveur" });
   }
 };
 
@@ -27,7 +27,7 @@ exports.changePassword = async (req, res) => {
     return res.status(200).json({ message: "Mot de passe modifié avec succès" });
   } catch (error) {
     console.error(error);
-    return res.status(error.status || 500).json({ message: error.message || "Erreur interne du serveur" });
+    return res.status(error.status || 500).json({ message: "Erreur interne du serveur" });
   }
 };
 
@@ -37,7 +37,7 @@ exports.forgotPassword = async (req, res) => {
     return res.status(200).json({ message: "Si cet utilisateur existe, un lien de réinitialisation a été envoyé." });
   } catch (error) {
     console.error(error);
-    return res.status(error.status || 500).json({ message: error.message || "Erreur interne du serveur" });
+    return res.status(error.status || 500).json({ message: "Erreur interne du serveur" });
   }
 };
 
@@ -47,7 +47,7 @@ exports.resetPassword = async (req, res) => {
     return res.status(200).json({ message: "Mot de passe réinitialisé avec succès" });
   } catch (error) {
     console.error(error);
-    return res.status(error.status || 500).json({ message: error.message || "Erreur interne du serveur" });
+    return res.status(error.status || 500).json({ message: "Erreur interne du serveur" });
   }
 };
 
@@ -57,6 +57,6 @@ exports.refreshToken = async (req, res) => {
     return res.status(200).json({ accessToken, refreshToken });
   } catch (error) {
     console.error(error);
-    return res.status(error.status || 500).json({ message: error.message || "Erreur interne du serveur" });
+    return res.status(error.status || 500).json({ message: "Erreur interne du serveur" });
   }
 };

@@ -1,3 +1,4 @@
+process.env.JWT_SECRET = process.env.JWT_SECRET || "test-secret";
 const request = require("supertest");
 const app = require("../src/app");
 const prisma = require("../src/prisma/prisma");

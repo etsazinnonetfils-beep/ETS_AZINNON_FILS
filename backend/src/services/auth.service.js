@@ -3,7 +3,10 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const prisma = require("../prisma/prisma");
 
-const JWT_SECRET = process.env.JWT_SECRET || "secret";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1d";
 const SALT_ROUNDS = 10;
 
@@ -148,8 +151,7 @@ exports.forgotPassword = async (identifier) => {
       passwordResetExpires: expires,
     },
   });
-
-  console.log(`Password reset token for ${utilisateur.email || utilisateur.telephone}: ${token}`);
+  // Do NOT log the reset token. Delivery (email/SMS) must handle token securely.
 };
 
 exports.resetPassword = async (token, newPassword) => {

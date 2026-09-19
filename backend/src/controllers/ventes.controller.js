@@ -4,7 +4,7 @@ const formatError = (error) => {
   console.error(error);
   return {
     status: error.status || 500,
-    body: { message: error.message || "Erreur interne du serveur" },
+    body: { message: "Erreur interne du serveur" },
   };
 };
 
