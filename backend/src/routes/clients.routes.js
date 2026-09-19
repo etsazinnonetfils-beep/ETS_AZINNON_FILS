@@ -22,8 +22,8 @@ const stripSoldeUnlessAuthorized = (allowedRoles = []) => (req, res, next) => {
   return next();
 };
 
-router.get("/", listerClients);
-router.get("/:id", obtenirClient);
+router.get("/", authenticate, authorizeRoles("SUPER_ADMIN", "ADMIN", "GESTIONNAIRE"), listerClients);
+router.get("/:id", authenticate, authorizeRoles("SUPER_ADMIN", "ADMIN", "GESTIONNAIRE"), obtenirClient);
 // Protect create/update/delete: only authenticated users with roles can perform these actions
 // Allow roles to create/update clients, but only specific roles may set `solde`
 router.post(

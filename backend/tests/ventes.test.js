@@ -86,4 +86,23 @@ describe("Ventes API", () => {
     expect(response.status).toBe(409);
     expect(response.body.message).toBe("Moto déjà vendue");
   });
+
+  it("should list ventes (protected)", async () => {
+    prisma.vente.create.mockClear();
+    // mock findMany used by listVentes if needed
+    prisma.vente.findMany = jest.fn().mockResolvedValue([{ id: 1, montant: 10000 }]);
+
+    const token = require("jsonwebtoken").sign({ userId: 2, role: "ADMIN" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).get("/api/ventes").set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+  });
+
+  it("should get a vente by id (protected)", async () => {
+    prisma.vente.findUnique = jest.fn().mockResolvedValue({ id: 1, montant: 10000 });
+    const token = require("jsonwebtoken").sign({ userId: 2, role: "ADMIN" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).get("/api/ventes/1").set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+  });
 });

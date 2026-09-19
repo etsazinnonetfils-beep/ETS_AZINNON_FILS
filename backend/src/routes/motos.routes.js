@@ -17,8 +17,8 @@ const { authenticate, authorizeRoles } = require("../middleware/auth.middleware"
 
 const router = express.Router();
 
-router.get("/", validateQuery(motoQuerySchema), listerMotos);
-router.get("/:id", obtenirMoto);
+router.get("/", authenticate, authorizeRoles("SUPER_ADMIN", "ADMIN", "GESTIONNAIRE", "MAGASINIER"), validateQuery(motoQuerySchema), listerMotos);
+router.get("/:id", authenticate, authorizeRoles("SUPER_ADMIN", "ADMIN", "GESTIONNAIRE", "MAGASINIER"), obtenirMoto);
 // Protect stock modifications: only authorized roles can create/update/delete
 router.post("/", authenticate, authorizeRoles("SUPER_ADMIN", "ADMIN", "GESTIONNAIRE", "MAGASINIER"), validateBody(motoSchema), creerMoto);
 router.put("/:id", authenticate, authorizeRoles("SUPER_ADMIN", "ADMIN", "GESTIONNAIRE", "MAGASINIER"), validateBody(motoUpdateSchema), modifierMoto);

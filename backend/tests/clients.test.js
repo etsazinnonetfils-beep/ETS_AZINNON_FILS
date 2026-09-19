@@ -19,7 +19,8 @@ describe("Clients API", () => {
 
   it("should return a list of clients", async () => {
     prisma.client.findMany.mockResolvedValue([{ id: 1, nom: "A", prenom: "B" }]);
-    const response = await request(app).get("/api/clients");
+    const token = require("jsonwebtoken").sign({ userId: 1, role: "GESTIONNAIRE" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).get("/api/clients").set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual([{ id: 1, nom: "A", prenom: "B" }]);
@@ -28,7 +29,8 @@ describe("Clients API", () => {
 
   it("should return 404 when a client is not found", async () => {
     prisma.client.findUnique.mockResolvedValue(null);
-    const response = await request(app).get("/api/clients/1");
+    const token = require("jsonwebtoken").sign({ userId: 1, role: "GESTIONNAIRE" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).get("/api/clients/1").set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(404);
     expect(response.body).toEqual({ message: "Client introuvable" });

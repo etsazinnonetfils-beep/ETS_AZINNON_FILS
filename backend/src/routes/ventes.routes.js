@@ -5,8 +5,8 @@ const { authenticate, authorizeRoles } = require("../middleware/auth.middleware"
 
 const router = express.Router();
 
-router.get("/", listerVentes);
-router.get("/:id", obtenirVente);
+router.get("/", authenticate, authorizeRoles("SUPER_ADMIN", "ADMIN", "GESTIONNAIRE", "CAISSIER", "COMMERCIAL"), listerVentes);
+router.get("/:id", authenticate, authorizeRoles("SUPER_ADMIN", "ADMIN", "GESTIONNAIRE", "CAISSIER", "COMMERCIAL"), obtenirVente);
 // Protect creation of ventes: authenticated users with appropriate roles only
 router.post(
 	"/",

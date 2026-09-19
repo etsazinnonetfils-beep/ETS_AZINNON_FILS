@@ -49,7 +49,8 @@ describe("Motos API", () => {
     prisma.moto.count.mockResolvedValue(1);
     prisma.moto.findMany.mockResolvedValue([sampleMoto]);
 
-    const response = await request(app).get("/api/motos?search=R1&marque=Yamaha&statut=EN_STOCK&sortBy=createdAt&order=desc&page=1&limit=10");
+    const token = require("jsonwebtoken").sign({ userId: 1, role: "MAGASINIER" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).get("/api/motos?search=R1&marque=Yamaha&statut=EN_STOCK&sortBy=createdAt&order=desc&page=1&limit=10").set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(200);
     expect(response.body.meta.total).toBe(1);
@@ -59,7 +60,8 @@ describe("Motos API", () => {
   it("should get a moto by id", async () => {
     prisma.moto.findUnique.mockResolvedValue(sampleMoto);
 
-    const response = await request(app).get("/api/motos/1");
+    const token = require("jsonwebtoken").sign({ userId: 1, role: "MAGASINIER" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).get("/api/motos/1").set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(200);
     expect(response.body.reference).toBe("MT-2026-001");
