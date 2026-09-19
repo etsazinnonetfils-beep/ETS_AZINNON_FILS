@@ -97,4 +97,39 @@ describe("Clients API", () => {
     expect(calledArg.data).toBeDefined();
     expect(calledArg.data.solde).toBeUndefined();
   });
+
+  it("GET /api/clients without JWT returns 401", async () => {
+    const response = await request(app).get("/api/clients");
+    expect(response.status).toBe(401);
+  });
+
+  it("GET /api/clients with unauthorized role returns 403", async () => {
+    const token = require("jsonwebtoken").sign({ userId: 99, role: "COMMERCIAL" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).get("/api/clients").set("Authorization", `Bearer ${token}`);
+    expect(response.status).toBe(403);
+  });
+
+  it("POST /api/clients without JWT returns 401", async () => {
+    const payload = { nom: "X", prenom: "Y", telephone: "0123456789", email: "x@y.com", solde: 100 };
+    const response = await request(app).post("/api/clients").send(payload);
+    expect(response.status).toBe(401);
+  });
+
+  it("POST /api/clients with unauthorized role returns 403", async () => {
+    const payload = { nom: "X", prenom: "Y", telephone: "0123456789", email: "x@y.com", solde: 100 };
+    const token = require("jsonwebtoken").sign({ userId: 99, role: "COMMERCIAL" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).post("/api/clients").set("Authorization", `Bearer ${token}`).send(payload);
+    expect(response.status).toBe(403);
+  });
+
+  it("PUT /api/clients/:id without JWT returns 401", async () => {
+    const response = await request(app).put("/api/clients/1").send({ nom: "Up", solde: 200 });
+    expect(response.status).toBe(401);
+  });
+
+  it("PUT /api/clients/:id with unauthorized role returns 403", async () => {
+    const token = require("jsonwebtoken").sign({ userId: 99, role: "COMMERCIAL" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).put("/api/clients/1").set("Authorization", `Bearer ${token}`).send({ nom: "Up", solde: 200 });
+    expect(response.status).toBe(403);
+  });
 });

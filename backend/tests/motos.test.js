@@ -117,4 +117,15 @@ describe("Motos API", () => {
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("Moto supprimée avec succès");
   });
+
+  it("GET /api/motos without JWT returns 401", async () => {
+    const response = await request(app).get("/api/motos");
+    expect(response.status).toBe(401);
+  });
+
+  it("GET /api/motos with unauthorized role returns 403", async () => {
+    const token = require("jsonwebtoken").sign({ userId: 5, role: "COMMERCIAL" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).get("/api/motos").set("Authorization", `Bearer ${token}`);
+    expect(response.status).toBe(403);
+  });
 });

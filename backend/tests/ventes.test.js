@@ -105,4 +105,15 @@ describe("Ventes API", () => {
 
     expect(response.status).toBe(200);
   });
+
+  it("GET /api/ventes without JWT returns 401", async () => {
+    const response = await request(app).get("/api/ventes");
+    expect(response.status).toBe(401);
+  });
+
+  it("GET /api/ventes with unauthorized role returns 403", async () => {
+    const token = require("jsonwebtoken").sign({ userId: 2, role: "MAGASINIER" }, process.env.JWT_SECRET || "secret");
+    const response = await request(app).get("/api/ventes").set("Authorization", `Bearer ${token}`);
+    expect(response.status).toBe(403);
+  });
 });
